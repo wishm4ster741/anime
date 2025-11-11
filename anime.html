@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyAnimeList Clone</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="anime.css">
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <ul class="nav-left">
+                <li class="menu-item">
+                    <a href="#">Anime</a>
+                    <ul class="submenu">
+                        <li><a href="#">Anime Search</a></li>
+                        <li><a href="#">Top Anime</a></li>
+                        <li><a href="#">Upcoming Anime</a></li>
+                    </ul>
+                </li>
+                <li class="menu-item">
+                    <a href="#">Manga</a>
+                    <ul class="submenu">
+                        <li><a href="#">Manga Search</a></li>
+                        <li><a href="#">Top Manga</a></li>
+                        <li><a href="#">Upcoming Manga</a></li>
+                    </ul>
+                </li>
+            </ul>
+
+            <div class="search-container">
+                <input type="text" placeholder="Search..." class="search-input">
+                <button class="search-button">🔍</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Welcome to MyAnimeList</h1>
+            <p>Find your favorite anime and manga!</p>
+            <button class="explore-button" onclick="showAnime('5114')">Explore Now</button>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <section class="main-content">
+        <div class="xanime-grid" id="result-grid">
+        </div>
+
+        <h2 hidden>Random</h2>
+        <div hidden class="anime-grid" id="random-grid">
+        </div>
+
+        <h2 hidden>Recommended</h2>
+        <div hidden class="anime-grid" id="recommended-grid">
+        </div>
+
+        <h2>Top List</h2>
+        <div class="anime-grid" id="anime-grid">
+            loading...
+            <!-- Grid Item 
+            <div class="anime-card">
+                <img src="https://via.placeholder.com/200x300" alt="Anime 1">
+                <h3>Anime Title</h3>
+            </div>
+            <div class="anime-card">
+                <img src="https://via.placeholder.com/200x300" alt="Anime 2">
+                <h3>Anime Title</h3>
+            </div>
+            <div class="anime-card">
+                <img src="https://via.placeholder.com/200x300" alt="Anime 3">
+                <h3>Anime Title</h3>
+            </div>
+            <div class="anime-card">
+                <img src="https://via.placeholder.com/200x300" alt="Anime 4">
+                <h3>Anime Title</h3>
+            </div>
+            -->
+        </div>
+
+        <h2>Upcoming</h2>
+        <div class="anime-grid" id="upcoming-grid">
+            loading...
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>MyAnimeList Clone &copy; 2025</p>
+        <div class="footer-links">
+            <a href="#">About</a>
+            <a href="#">Contact</a>
+            <a href="#">Privacy</a>
+        </div>
+    </footer>
+
+    <script>
+        const apiBaseUrl = "https://api.jikan.moe/v4";
+        const pageLimit = 25;
+
+        async function showAnime(mal_id) {
+
+            const url = `${apiBaseUrl}/anime/${mal_id}/full`;
+
+            console.log (url);
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                displayAnimeFull(data.data, 'result-grid');
+            } catch (error) {
+                console.error("Error fetching search results:", error);
+            }
+        }
+
+        async function searchAnime(query, page=1) {
+            const url = `${apiBaseUrl}/anime?q=${query}&page=${page}&limit=${pageLimit}`;
+            
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                displayAnime(data.data, 'result-grid');
+            } catch (error) {
+                console.error("Error fetching search results:", error);
+            }
+        }
+
+        async function get_TopAnime(page=1) {
+            const url = `${apiBaseUrl}/top/anime?page=${page}&limit=${pageLimit}`;
+            
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+
+                
+                displayAnime(data.data,'anime-grid')
+
+            } catch (error) {
+                console.error("Error fetching data:", error);
+            }
+        }
+
+        async function get_Recommended(page=1) {            
+            const url = `${apiBaseUrl}/recommendations/anime?page=${page}&limit=${pageLimit}`;
+            
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+
+                
+                displayRecommended(data.data,'recommended-grid')
+
+            } catch (error) {
+                console.error("Error fetching data:", error);
+            }
+        }
+
+        async function get_UpComing(page=1) {
+            const url = `${apiBaseUrl}/seasons/upcoming?page=${page}&limit=${pageLimit}`;
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+
+                
+                displayAnime(data.data,'upcoming-grid')
+
+            } catch (error) {
+                console.error("Error fetching data:", error);
+            }
+        }
+
+        function displayAnimeFull(animeData,gridId) {
+            console.log(animeData);
+
+            if (animeData) {
+                const animeListContainer = document.getElementById(gridId);
+                animeListContainer.innerHTML = ''; // Reset kontainer
+
+                const animeItem = document.createElement('div');
+                animeItem.classList.add('xanime-card');
+                animeItem.innerHTML = `
+                        <img src="${animeData.images.jpg.image_url}" alt="${animeData.title}">
+                        <p>MAL ID : ${animeData.mal_id}</p>
+                        <p>${animeData.title_english} <br> ${animeData.title_japanese} <p>
+                            `;
+
+                animeListContainer.appendChild(animeItem);
+
+                const fullContainer = document.createElement('div');
+                fullContainer.innerHTML = `English : ${animeData.title_english} <br>
+                                            Japan : ${animeData.title_japanese} <br>
+                                            Synonyms : ${animeData.title_synonyms} <br>
+                                            Episodes : ${animeData.episodes} <br>
+                                            Duration : ${animeData.duration} <br>
+                                            Rating : ${animeData.rating} <br>
+                                            Score : ${animeData.score} <br>
+                                            Synopsis : ${animeData.synopsis}`;                                            
+                animeListContainer.appendChild(fullContainer);
+
+                //addCardEventListeners();
+            }
+        }
+
+        function displayAnime(animeData,gridId) {
+            const animeListContainer = document.getElementById(gridId);
+            animeListContainer.innerHTML = ''; // Reset kontainer                        
+            // Menambahkan konten elemen HTML
+
+            animeData.forEach(anime => {
+                const animeItem = document.createElement('div');
+                animeItem.classList.add('anime-card');
+                animeItem.id = animeData.mal_id;
+
+                animeItem.innerHTML = `
+                        <img src="${anime.images.jpg.image_url}" alt="${anime.title}">
+                        <p>MAL ID : ${anime.mal_id}</p>
+                        <p>${anime.title_english} <br> ${anime.title_japanese} <p>`;
+                // Menambahkan elemen anime ke dalam container
+                animeListContainer.appendChild(animeItem);
+
+                animeItem.addEventListener('click', () => {
+                    showAnime(anime.mal_id);
+                });
+            });
+
+        }
+
+        function displayRecommended(animeData,gridId) {
+            const animeListContainer = document.getElementById(gridId);
+            let counter = 0;
+            animeListContainer.innerHTML = ''; // Reset kontainer                        
+            // Menambahkan konten elemen HTML
+
+            animeData.forEach(anime => {
+                if(counter>=pageLimit) return;
+                const animeItem = document.createElement('div');
+                animeItem.classList.add('anime-card');
+                animeItem.id = anime.mal_id;
+                
+                animeItem.innerHTML = `
+                        <img src="${anime.entry[0].images.jpg.image_url}" alt="${anime.title}">
+                        <p>MAL ID : ${anime.mal_id}</p>
+                        <p>${anime.entry[0].title}</p>`;
+
+                // Menambahkan elemen anime ke dalam container
+                animeListContainer.appendChild(animeItem);
+                counter++;
+
+                animeItem.addEventListener('click', () => {
+                    showAnime(anime.mal_id);
+                });
+
+            });
+
+            //addCardEventListeners();
+        }
+
+        const initialize = async () => {
+            try {
+                await get_TopAnime(1);
+                await get_UpComing(1);
+            } catch (error){
+                console.error("Error during initialization:", error);
+            }
+        };
+
+        const searchInput = document.querySelector('.search-input');
+        const searchButton = document.querySelector('.search-button');
+
+        searchButton.addEventListener('click', () => {
+            const query = searchInput.value.trim();
+            if (query) {
+                searchAnime(query);  // Menjalankan pencarian
+            }
+        });
+
+        /*
+        searchInput.addEventListener('keyup', (event) => {
+            const query = searchInput.value.trim();
+            if (query) {
+                searchAnime(query);  // Menjalankan pencarian ketika mengetik
+            } else {
+                get_TopAnime(1);  // Kembali ke daftar top anime jika input kosong
+            }
+        });*/
+
+        let eventListenersAdded = false;
+
+        // Menambahkan event listener ke setiap anime-card setelah tampil
+        function addCardEventListeners() {
+            const cardEvents = document.querySelectorAll('.anime-card');
+            
+            /*cardEvents.forEach(cardEvent => {
+                cardEvent.addEventListener('click', (event) => {
+                    alert(`You clicked on anime with ID: ${cardEvent.id}`);
+                }, { once: true });  // Hanya akan dijalankan sekali dan otomatis dihapus setelah itu
+            });*/
+        }
+
+        window.addEventListener('DOMContentLoaded', initialize);
+    </script>
+
+</body>
+</html>
