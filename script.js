@@ -29,7 +29,7 @@ const films = [
 ];
 
 const apiBaseUrl = "https://xvidapi.com/api.php";
-let pageLimit = 20;
+let pageLimit = 12;
 
 async function get_AV(page=1,category=0){
     const url = `${apiBaseUrl}/provide/vod?ac=detail&t=${category}&pagesize=${pageLimit}&pg=${page}&at=json`
@@ -43,14 +43,26 @@ async function get_AV(page=1,category=0){
         const button_container = document.getElementById('next-prev-button');
         const cat = document.getElementById('category-select').value;
         button_container.innerHTML = `
-                <button onclick="get_AV(${page-1},${cat})">Previous</button>
-                <label>page : ${data.page}</label>
-                <button onclick="get_AV(${page+1},${cat})">Next</button>`
+                <button onclick="get_AV(${page-1},${cat})" style="padding: 5px; padding-left: 20px; padding-right: 20px;">Previous</button>
+                <label style="font-size:12px">page : ${data.page} / ${data.pagecount}</label>
+                <button onclick="get_AV(${page+1},${cat})" style="padding: 5px; padding-left: 20px; padding-right: 20px;">Next</button>
+                <br>
+                <div style="width:100%; text-align: right">
+                    <button onclick="gotoPage()" style="padding: 5px; padding-left: 20px; padding-right: 20px; margin-top:10px;">goto</button>
+                    <input id="gotoNumber" type="number" style="padding:5px; width:60px" value=${page}><label style="font-size:12px"> of ${data.pagecount} page
+                </div>`
     } catch (error) {
         console.error("Error fetching search results:", error);
     } finally {
         window.document.body.style.cursor = 'default';
     }
+}
+
+
+function gotoPage(){
+    const goto = document.getElementById('gotoNumber').value;
+    const category = document.getElementById('category-select').value;
+    get_AV(goto,category);
 }
 
 function displayAV(AV_Films, gridId){
@@ -64,9 +76,8 @@ function displayAV(AV_Films, gridId){
         filmCard.innerHTML = `
             <img src="${film.thumb_url}" alt="">
             <div class="card-content">
-                <p>Cast : ${film.actor} / Year : ${film.year}</p>
-                <p>Title : ${film.name}</p>
-                <p>duration : ${film.time} / quality : ${film.quality}</p>
+                <h3>${film.name}</h3>
+                <p><b>Cast : </b>${film.actor} <br> <b>Year :</b> ${film.year} <br> <b>duration :</b> ${film.time} <br> <b>quality :</b> ${film.quality}</p>
                 <a href="${film.episodes.server_data.Full.link_embed}" target="_blank">Tonton Sekarang</a>
             </div>
         `;
